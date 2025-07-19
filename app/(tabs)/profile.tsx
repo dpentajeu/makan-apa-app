@@ -6,8 +6,10 @@ import {
   ScrollView,
   TouchableOpacity,
   Image,
+  Alert,
 } from 'react-native';
 import { User, MapPin, Heart, Settings, CircleHelp as HelpCircle, LogOut, ChevronRight } from 'lucide-react-native';
+import { useAuth } from '@/contexts/AuthContext';
 
 const menuItems = [
   { icon: User, title: 'Edit Profile', subtitle: 'Update your information' },
@@ -19,6 +21,35 @@ const menuItems = [
 ];
 
 export default function ProfileScreen() {
+  const { user, signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    Alert.alert(
+      'Sign Out',
+      'Are you sure you want to sign out?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Sign Out',
+          style: 'destructive',
+          onPress: async () => {
+            const { error } = await signOut();
+            if (error) {
+              Alert.alert('Error', 'Failed to sign out');
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleMenuPress = (item: any) => {
+    if (item.title === 'Sign Out') {
+      handleSignOut();
+    }
+    // Handle other menu items here
+  };
+
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <View style={styles.header}>
@@ -34,8 +65,8 @@ export default function ProfileScreen() {
             style={styles.avatar}
           />
         </View>
-        <Text style={styles.userName}>John Doe</Text>
-        <Text style={styles.userEmail}>john.doe@example.com</Text>
+        <Text style={styles.userName}>{user?.user_metadata?.full_name || 'User'}</Text>
+        <Text style={styles.userEmail}>{user?.email || 'user@example.com'}</Text>
         <View style={styles.locationContainer}>
           <MapPin size={16} color="#6B7280" />
           <Text style={styles.userLocation}>Jakarta, Indonesia</Text>
@@ -68,6 +99,7 @@ export default function ProfileScreen() {
               item.danger && styles.dangerMenuItem,
               index === menuItems.length - 1 && styles.lastMenuItem,
             ]}
+            onPress={() => handleMenuPress(item)}
           >
             <View style={styles.menuItemLeft}>
               <View

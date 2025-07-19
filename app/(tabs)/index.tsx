@@ -12,7 +12,9 @@ import * as Location from 'expo-location';
 import { MapPin, Star, Clock, Navigation } from 'lucide-react-native';
 import { LocationCard } from '@/components/LocationCard';
 import { RestaurantCard } from '@/components/RestaurantCard';
+import { WelcomeBanner } from '@/components/WelcomeBanner';
 import { getMealSuggestions } from '@/services/mealService';
+import { useScrollViewLayout, useHeaderLayout } from '@/hooks';
 
 interface LocationInfo {
   latitude: number;
@@ -36,6 +38,10 @@ export default function HomeScreen() {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [loading, setLoading] = useState(true);
   const [locationLoading, setLocationLoading] = useState(false);
+  
+  // Navigation layout hooks to prevent overlapping issues
+  const scrollViewLayout = useScrollViewLayout();
+  const headerLayout = useHeaderLayout();
 
   useEffect(() => {
     requestLocationPermission();
@@ -110,10 +116,16 @@ export default function HomeScreen() {
   }
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Makan Apa?</Text>
-        <Text style={styles.subtitle}>Discover delicious meals nearby</Text>
+    <ScrollView 
+      style={[styles.container, scrollViewLayout.scrollViewStyle]} 
+      contentContainerStyle={scrollViewLayout.contentContainerStyle}
+      showsVerticalScrollIndicator={false}
+    >
+      <View style={[styles.header, headerLayout.headerContainerStyle]}>
+        <View style={headerLayout.headerContentStyle}>
+          <Text style={styles.title}>Makan Apa?</Text>
+          <Text style={styles.subtitle}>Discover delicious meals nearby</Text>
+        </View>
       </View>
 
       <LocationCard
@@ -121,6 +133,8 @@ export default function HomeScreen() {
         onRefresh={refreshLocation}
         loading={locationLoading}
       />
+
+      <WelcomeBanner />
 
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
@@ -135,7 +149,7 @@ export default function HomeScreen() {
         ))}
       </View>
 
-      <View style={styles.bottomSpacing} />
+      <View style={{ height: scrollViewLayout.bottomSpacing }} />
     </ScrollView>
   );
 }
@@ -158,9 +172,6 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   header: {
-    paddingHorizontal: 20,
-    paddingTop: 60,
-    paddingBottom: 24,
     backgroundColor: '#FFFFFF',
   },
   title: {
@@ -194,7 +205,5 @@ const styles = StyleSheet.create({
     color: '#FF6B35',
     fontWeight: '600',
   },
-  bottomSpacing: {
-    height: 100,
-  },
+
 });
